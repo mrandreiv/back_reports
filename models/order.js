@@ -38,6 +38,7 @@ const orderSchema = new mongoose.Schema({
         },
         shipTo:{
                 street:     {type:String},
+                streetNr:     {type:String},
                 country:    {type:String},
                 city:       {type:String},
                 province:   {type:String},
@@ -47,6 +48,7 @@ const orderSchema = new mongoose.Schema({
                 }    
             },
     COD:{
+        apply: {type:Boolean},
         currency:{type: String},
         total:{type:Number}
     }   ,    

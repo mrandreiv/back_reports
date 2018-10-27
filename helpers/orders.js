@@ -27,12 +27,24 @@ exports.getOrdersName = async function (req, res, next) {
         return next(error)
     }
 }
-exports.getOrderId = async function (req, res, next){
+exports.getOrderIdSearch = async function (req, res, next){
     try {
         let id = req.params.id
-        let result = await db.Order.find({orderNr:new RegExp(id,'i')})
+        let result = await db.Order.find({orderNr:new RegExp(id, 'i')})
         return res.status(200).json(result)
         
+    } catch (error) {
+        return next(error)
+    }
+}
+exports.getOrderId = async function (req, res, next) {
+    try {
+        let id = req.params.id
+        let result = await db.Order.find({
+            orderNr: id
+        })
+        return res.status(200).json(result)
+
     } catch (error) {
         return next(error)
     }
@@ -111,6 +123,18 @@ try {
 } catch (error) {
     return next(error)}
 }
-exports.updateOrder = async function (req, res, next) {}
 
+
+exports.updateOrder = async function (req, res, next) {
+    try {
+        let orderId=req.params.id
+        console.log(orderId,req.body)
+        let order = await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
+        
+        return res.status(200).json(order)
+
+    } catch (error) {
+        return next(error)
+    } 
+}
 module.exports = exports;

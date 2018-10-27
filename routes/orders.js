@@ -16,7 +16,10 @@ router.route('/:id')
         .post(helpers.createOrder)
         .get(helpers.getOrderId)
         .put(helpers.updateOrder)
-  
+
+router.route('/search/:id')
+        .get(helpers.getOrderIdSearch)
+        
 router.route('/ref/:affil')
         .post(helpers.createOrder)
 

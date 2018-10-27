@@ -28,6 +28,7 @@ const data = {
         shipTo: {
             phone: faker.phone.phoneNumber(),
             street: faker.address.streetAddress(),
+            streetNr:faker.address.streetPrefix(),
             country: 'Vietnam',
             city: faker.address.city(),
             province: faker.address.state(),

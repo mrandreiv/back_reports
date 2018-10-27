@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
-mongoose.set('debuer', true)
+mongoose.set('debuger', true)
 mongoose.Promise = Promise
 
-mongoose.connect('mongodb://localhost/eshop_crm')
+mongoose.connect('mongodb://localhost/eshop_crm', {useNewUrlParser: true})
 
 module.exports.Client = require('./client')
 module.exports.Order = require('./order')
