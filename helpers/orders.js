@@ -131,10 +131,51 @@ exports.updateOrder = async function (req, res, next) {
         console.log(orderId,req.body)
         let order = await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
         
+         console.log('+++++++UPDATED++++++:',order)
         return res.status(200).json(order)
 
     } catch (error) {
         return next(error)
     } 
+}
+
+
+exports.deleteItem = async function(req,res,next)
+{
+try {
+    let orderId=req.params.id
+    console.log(orderId)
+  await db.Order.update({orderNr:orderId},
+        {$pull:{items:{_id:req.params.itemId}}}) // deleteITeim useing $unset to remove a key from collection
+
+    let order = await db.Order.findOne({
+        orderNr: orderId
+    })
+    console.log(order)
+
+    return res.status(200).json(order)
+    
+} catch (error) {
+    return next(error)
+}
+}
+
+exports.addItem = async function(req,res,next){
+    
+    try {
+        let orderId=req.params.id
+            console.log("----ADDING ITEM:",orderId, req.body)
+
+         await db.Order.update({orderNr:orderId},{$push:{items:req.body}})
+
+        let order = await db.Order.findOne({orderNr:orderId})
+
+        return res.status(200).json(order)
+               
+        // return res.send('hello')
+    } catch (error) {
+        return next(err)
+        
+    }
 }
 module.exports = exports;

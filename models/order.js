@@ -61,7 +61,13 @@ const orderSchema = new mongoose.Schema({
                     }
                 }
     }, {
-    timestamps: true
+    timestamps: true,
+    changeLog:[
+        {
+        who:{type:String},
+        when:{type:Date},
+        what:{type:Object}
+    }]
 })
 
 const Order = mongoose.model('Order',orderSchema)

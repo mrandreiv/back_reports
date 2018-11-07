@@ -16,6 +16,14 @@ router.route('/:id')
         .post(helpers.createOrder)
         .get(helpers.getOrderId)
         .put(helpers.updateOrder)
+        
+
+router.route('/:id/items/:itemId')
+        .post(helpers.deleteItem)
+        
+
+router.route('/:id/items/')
+        .post(helpers.addItem)
 
 router.route('/search/:id')
         .get(helpers.getOrderIdSearch)
