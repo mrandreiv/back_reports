@@ -40,9 +40,9 @@ exports.getOrderIdSearch = async function (req, res, next){
 exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
-        let result = await db.Order.find({
-            orderNr: id
-        })
+        let result = await db.Order.find({orderNr: id})
+                                        .populate('changeLog',{who:true, when:true, what:true})
+
         return res.status(200).json(result)
 
     } catch (error) {
@@ -128,10 +128,10 @@ try {
 exports.updateOrder = async function (req, res, next) {
     try {
         let orderId=req.params.id
-        console.log(orderId,req.body)
+        // console.log(orderId,req.body)
         let order = await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
         
-         console.log('+++++++UPDATED++++++:',order)
+        //  console.log('+++++++UPDATED++++++:',order)
         return res.status(200).json(order)
 
     } catch (error) {
@@ -144,14 +144,14 @@ exports.deleteItem = async function(req,res,next)
 {
 try {
     let orderId=req.params.id
-    console.log(orderId)
+    // console.log(orderId)
   await db.Order.update({orderNr:orderId},
         {$pull:{items:{_id:req.params.itemId}}}) // deleteITeim useing $unset to remove a key from collection
 
     let order = await db.Order.findOne({
         orderNr: orderId
     })
-    console.log(order)
+    // console.log(order)
 
     return res.status(200).json(order)
     
@@ -176,6 +176,68 @@ exports.addItem = async function(req,res,next){
     } catch (error) {
         return next(err)
         
+    }
+}
+
+exports.addLog = async function (req, res, next) {
+    // console.log('request body:', req.body)
+    debugger
+    try {
+       let{who,what,orderId} = req.body
+    
+// log OLD VALUES BEFORE UPDATE: 
+
+       // 1. find the order 
+  let foundOrder=await db.Order.findOne({orderNr:orderId})
+  let foundItems = foundOrder.items
+     console.log('foundItems',foundItems)
+     console.log('inCommingChanges:',what.items)
+  let oldValues = []  
+
+  what.items.forEach(wItem=>{
+     const oldValue={}
+      for (let i=0;i<=foundItems.length;i++){
+          if (wItem._id = foundItems[i]._id) { //2. find the item that will be updated
+              for(let key in wItem){
+                    oldvalue[key]=foundItems[i][key]
+              }
+              console.log(oldValue)
+       oldValues.push(oldvalue)   }//3. save the data before changes to what.oldValues{}
+      }
+  })
+//4. create log with oldValues + newVlaue
+    
+        let newLog = await db.ChangeLog.create(
+                {
+                    orderId:orderId,
+                    who:who,
+                    when: Date.now(),
+                    what:what
+
+        })
+        console.log('___NEWLOG____:',newLog)
+
+        foundOrder.changeLog.push(newLog._id)
+        await foundOrder.save()
+
+        return res.status(200).json(foundOrder)
+
+    } catch (error) {
+          return next(error)
+          }
+
+}
+
+exports.getLogs= async function (req,res,next){
+    try {
+        
+        let orderId = req.params.id
+
+        let foundLog = await db.ChangeLog.findById({orderId:orderId})
+
+        return res.status(200).json(foundLog)
+    } catch (error) {
+        return next(error)
     }
 }
 module.exports = exports;
