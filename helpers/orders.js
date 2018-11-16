@@ -31,6 +31,7 @@ exports.getOrderIdSearch = async function (req, res, next){
     try {
         let id = req.params.id
         let result = await db.Order.find({orderNr:new RegExp(id, 'i')})
+                                  
         return res.status(200).json(result)
         
     } catch (error) {
@@ -40,10 +41,14 @@ exports.getOrderIdSearch = async function (req, res, next){
 exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
-        let result = await db.Order.find({
-            orderNr: id
-        })
-        return res.status(200).json(result)
+        await db.Order.find({orderNr: id})
+                                    .populate('changeLog')
+                                    .sort({when:-1})
+                                    .exec(function(err,doc){
+                                                return res.status(200).json(doc)
+                                    })
+
+
 
     } catch (error) {
         return next(error)
@@ -130,6 +135,7 @@ exports.updateOrder = async function (req, res, next) {
         let orderId=req.params.id
         console.log(orderId,req.body)
         let order = await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
+                                    .populate('changeLog')
         
          console.log('+++++++UPDATED++++++:',order)
         return res.status(200).json(order)
@@ -176,6 +182,43 @@ exports.addItem = async function(req,res,next){
     } catch (error) {
         return next(err)
         
+    }
+}
+
+exports.addLog = async function (req, res, next) {
+    console.log('request body:', req.body)
+    try {
+       let{who,what,orderId} = req.body
+
+        let newLog = await db.ChangeLog.create(
+                {
+                    orderId:orderId,
+                    who:who,
+                    when: Date.now(),
+                    what:what
+        })
+        console.log('___NEWLOG____:',JSON.stringify(newLog))
+
+        let foundOrder=await db.Order.findOne({orderNr:orderId})
+        foundOrder.changeLog.push(newLog._id)
+        await foundOrder.save()
+
+        return res.status(200).json(foundOrder)
+
+    } catch (error) {
+          return next(error)
+          }
+
+}
+exports.getLogs = async function(req,res,next){
+    
+    try {
+        let logs = await db.ChangeLog.find()
+        return res.status(200).json(logs)
+    
+
+    } catch (error) {
+        return next(error)
     }
 }
 module.exports = exports;

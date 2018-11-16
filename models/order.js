@@ -59,16 +59,12 @@ const orderSchema = new mongoose.Schema({
              type: mongoose.Schema.Types.ObjectId,
              ref: "User",
                     }
-                }
-    }, {
-    timestamps: true,
-    changeLog:[
-        {
-        who:{type:String},
-        when:{type:Date},
-        what:{type:Object}
-    }]
-})
+                },
+    changeLog: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"ChangeLog"
+    }], 
+},{timestamps: true})
 
 const Order = mongoose.model('Order',orderSchema)
 
