@@ -188,10 +188,11 @@ exports.addLog = async function (req, res, next) {
 // log OLD VALUES BEFORE UPDATE: 
 
        // 1. find the order 
-  let foundOrder=await db.Order.findOne({orderNr:orderId})
+  let foundOrder=await db.Order.findOne({orderNr:orderId}).populate('changeLog',{who:true, when:true, what:true})
+  
   let foundItems = foundOrder.items
-     console.log('foundItems',foundItems)
-     console.log('inCommingChanges:',what.items)
+     console.log('-----foundItems-----',foundItems)
+     console.log('=====inCommingChanges:=====',what.items)
   let oldValues = []  
 
   what.items.forEach(wItem=>{
