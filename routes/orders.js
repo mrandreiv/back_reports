@@ -18,8 +18,9 @@ router.route('/:id')
         .put(helpers.updateOrder)
         
 router.route('/:id/log')
-                .post(helpers.addLog)
-                .get(helpers.getLogs)
+        .post(helpers.addLog)
+        .get(helpers.getLogs)
+        
 
 router.route('/:id/items/:itemId')
         .post(helpers.deleteItem)

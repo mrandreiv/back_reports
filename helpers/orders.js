@@ -41,7 +41,7 @@ exports.getOrderIdSearch = async function (req, res, next){
 exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
-        await db.Order.find({orderNr: id})
+        await db.Order.findOne({orderNr: id})
                                     .populate('changeLog')
                                     .sort({when:-1})
                                     .exec(function(err,doc){
