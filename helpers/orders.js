@@ -41,15 +41,10 @@ exports.getOrderIdSearch = async function (req, res, next){
 exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
-        await db.Order.findOne({orderNr: id})
+       let foundOrder= await db.Order.findOne({orderNr: id})
                                     .populate('changeLog')
-                                    .sort({when:-1})
-                                    .exec(function(err,doc){
-                                                return res.status(200).json(doc)
-                                    })
-
-
-
+                                
+        return res.status(200).json(foundOrder)
     } catch (error) {
         return next(error)
     }
@@ -120,7 +115,6 @@ try {
         }
     )
 
-
     let createdOrder = db.Order.findById(order._id)
     return res.status(200).json(createdOrder)
 
@@ -134,11 +128,13 @@ exports.updateOrder = async function (req, res, next) {
     try {
         let orderId=req.params.id
         console.log(orderId,req.body)
-        let order = await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
-                                    .populate('changeLog')
-        
-         console.log('+++++++UPDATED++++++:',order)
-        return res.status(200).json(order)
+         await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
+                                    
+        let foundOrder = await db.Order.findOne({orderNr: orderId})
+                                                     .populate('changeLog')
+
+        console.log('+++++++UPDATED++++++:', foundOrder)
+        return res.status(200).json(foundOrder)
 
     } catch (error) {
         return next(error)
@@ -150,16 +146,43 @@ exports.deleteItem = async function(req,res,next)
 {
 try {
     let orderId=req.params.id
-    console.log(orderId)
-  await db.Order.update({orderNr:orderId},
-        {$pull:{items:{_id:req.params.itemId}}}) // deleteITeim useing $unset to remove a key from collection
+    let itemId = req.params.itemId
+    
+    let foundOrder = await db.Order.findOne({
+                            $and:[
+                                {orderNr:orderId},
+                                {"items._id":itemId}
+                            ]})
 
-    let order = await db.Order.findOne({
-        orderNr: orderId
-    })
-    console.log(order)
+    let delItem = foundOrder.items.filter(item => item._id == itemId)
+                            
+    await db.Order.updateOne({orderNr:orderId},
+        {$pull:{items:{_id:itemId}}}) // deleteITeim useing $unset to remove a key from collection
+        
+    //log the change to collection ChangeLog
+        let  what ={
+            oldValue:{
+                name:'',
+                price:'',
+                quantity:''
+            }
+        }
+        what.oldValue.name = delItem[0].name
+        what.oldValue.price=delItem[0].price
+        what.oldValue.quantity=delItem[0].quantity
 
-    return res.status(200).json(order)
+        console.log('+++DELETEING ITEM: ', what)
+
+        let newLog = await db.ChangeLog.create({
+            orderId: orderId,
+            who: "user",
+            when: Date.now(),
+            what: what
+        })
+            foundOrder.changeLog.push(newLog._id)
+            await foundOrder.save()
+       
+    return res.status(200).json(foundOrder)
     
 } catch (error) {
     return next(error)
@@ -170,13 +193,35 @@ exports.addItem = async function(req,res,next){
     
     try {
         let orderId=req.params.id
-            console.log("----ADDING ITEM:",orderId, req.body)
-
          await db.Order.update({orderNr:orderId},{$push:{items:req.body}})
 
-        let order = await db.Order.findOne({orderNr:orderId})
+        let foundOrder = await db.Order.findOne({orderNr: orderId})
+        
+        //add the log to collection
+        let  what ={
+            newValue:{
+                name:'',
+                price:'',
+                quantity:''
+            }
+        }
 
-        return res.status(200).json(order)
+        what.newValue.name=req.body.name
+        what.newValue.price=req.body.price
+        what.newValue.quantity=req.body.quantity
+        console.log("----ADDING ITEM:", what)
+        
+        let newLog = await db.ChangeLog.create({
+            orderId: orderId,
+            who: "user",
+            when: Date.now(),
+            what: what
+        })
+       
+             foundOrder.changeLog.push(newLog._id)
+            await foundOrder.save()
+       
+        return res.status(200).json(foundOrder)
                
         // return res.send('hello')
     } catch (error) {
@@ -186,10 +231,11 @@ exports.addItem = async function(req,res,next){
 }
 
 exports.addLog = async function (req, res, next) {
-    console.log('request body:', req.body)
+
     try {
        let{who,what,orderId} = req.body
 
+        foundOrder = await db.Order.findOne({orderNr: orderId})
         let newLog = await db.ChangeLog.create(
                 {
                     orderId:orderId,
@@ -198,10 +244,9 @@ exports.addLog = async function (req, res, next) {
                     what:what
         })
         console.log('___NEWLOG____:',JSON.stringify(newLog))
-
-        let foundOrder=await db.Order.findOne({orderNr:orderId})
-        foundOrder.changeLog.push(newLog._id)
-        await foundOrder.save()
+        
+             foundOrder.changeLog.push(newLog._id)
+            await foundOrder.save()                                 
 
         return res.status(200).json(foundOrder)
 
