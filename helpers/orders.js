@@ -42,8 +42,8 @@ exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
        let foundOrder= await db.Order.findOne({orderNr: id})
-                                    .populate('changeLog')
-                                
+                                     .populate('changeLog')
+        console.log("====ORDER FOUND: ...=====",foundOrder._id)                               
         return res.status(200).json(foundOrder)
     } catch (error) {
         return next(error)
@@ -126,11 +126,11 @@ try {
 
 exports.updateOrder = async function (req, res, next) {
     try {
-        let orderId=req.params.id
-        console.log(orderId,req.body)
-         await db.Order.findOneAndUpdate({orderNr:orderId},req.body, {new: true})
+        let orderNr = req.params.id
+        // console.log(orderId,req.body)
+         await db.Order.findOneAndUpdate({orderNr:orderNr},req.body, {new: true})
                                     
-        let foundOrder = await db.Order.findOne({orderNr: orderId})
+        let foundOrder = await db.Order.findOne({orderNr: orderNr})
                                                      .populate('changeLog')
 
         console.log('+++++++UPDATED++++++:', foundOrder)
@@ -181,8 +181,9 @@ try {
         })
             foundOrder.changeLog.push(newLog._id)
             await foundOrder.save()
-       
-    return res.status(200).json(foundOrder)
+
+            let updateOrder=await db.Order.findOne({orderNr:orderId}).populate('changeLog')       
+    return res.status(200).json(updateOrder)
     
 } catch (error) {
     return next(error)
@@ -220,8 +221,11 @@ exports.addItem = async function(req,res,next){
        
              foundOrder.changeLog.push(newLog._id)
             await foundOrder.save()
-       
-        return res.status(200).json(foundOrder)
+
+        const updateOrder = await db.Order.findOne({orderNr:orderId})
+                                            .populate('changeLog')
+        console.log('====UPDATED ORDER (added new item)====: ',updateOrder)
+        return res.status(200).json(updateOrder)
                
         // return res.send('hello')
     } catch (error) {
