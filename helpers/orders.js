@@ -42,7 +42,7 @@ exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
        let foundOrder= await db.Order.findOne({orderNr: id})
-                                    .populate('changeLog')
+                                     .populate('changeLog')
                                 
         return res.status(200).json(foundOrder)
     } catch (error) {
@@ -181,8 +181,9 @@ try {
         })
             foundOrder.changeLog.push(newLog._id)
             await foundOrder.save()
-       
-    return res.status(200).json(foundOrder)
+
+            let updateOrder=await db.Order.findOne({orderNr:orderId}).populate('changeLog')       
+    return res.status(200).json(updateOrder)
     
 } catch (error) {
     return next(error)
@@ -220,8 +221,11 @@ exports.addItem = async function(req,res,next){
        
              foundOrder.changeLog.push(newLog._id)
             await foundOrder.save()
-       
-        return res.status(200).json(foundOrder)
+
+        const updateOrder = await db.Order.findOne({orderNr:orderId})
+                                            .populate('changeLog')
+        console.log('====UPDATED ORDER (added new item)====: ',updateOrder)
+        return res.status(200).json(updateOrder)
                
         // return res.send('hello')
     } catch (error) {
