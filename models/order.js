@@ -63,7 +63,13 @@ const orderSchema = new mongoose.Schema({
     changeLog: [{
         type: mongoose.Schema.Types.ObjectId,
         ref:"ChangeLog"
-    }], 
+    }],
+    comments:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref:"Comment"
+        }
+    ] 
 },{timestamps: true})
 
 const Order = mongoose.model('Order',orderSchema)

@@ -43,6 +43,9 @@ exports.getOrderId = async function (req, res, next) {
         let id = req.params.id
        let foundOrder= await db.Order.findOne({orderNr: id})
                                      .populate('changeLog')
+                                     .populate("comments")
+                                      
+
         console.log("====ORDER FOUND: ...=====",foundOrder._id)                               
         return res.status(200).json(foundOrder)
     } catch (error) {
@@ -249,8 +252,8 @@ exports.addLog = async function (req, res, next) {
         })
         console.log('___NEWLOG____:',newLog)
         
-             foundOrder.changeLog.push(newLog._id)
-            await foundOrder.save()                                 
+        foundOrder.changeLog.push(newLog._id)
+        await foundOrder.save()                                 
 
         return res.status(200).json(foundOrder)
 
@@ -259,6 +262,8 @@ exports.addLog = async function (req, res, next) {
           }
 
 }
+
+
 exports.getLogs = async function(req,res,next){
     
     try {
@@ -270,4 +275,75 @@ exports.getLogs = async function(req,res,next){
         return next(error)
     }
 }
+
+exports.addComment = async function(req,res,next){
+    try {
+        let {user,text} = req.body
+        let orderNr  = req.params.id
+        const foundOrder = await db.Order.findOne({orderNr:orderNr})
+         console.log("ORDER COMMENT:..",foundOrder.orderNr)
+
+        const newCommment  = await db.Comment.create({
+            orderNr: orderNr,
+            user:user,
+            text:text,
+            date:Date.now()
+        })
+        console.log('New comment added:',newCommment) 
+
+        foundOrder.comments.push(newCommment._id)
+        await foundOrder.save()
+
+        const allComments = await db.Order.findOne({
+            orderNr: orderNr
+        })
+        .populate("comments")
+        .sort({date:-1})
+
+        return res.status(200).json(allComments)
+        
+    } catch (error) {
+        return next(error)
+    }
+}
+exports.editComment = async function (req,res,next){
+    try {
+        
+    } catch (error) {
+        return next (error)
+    }
+}
+
+exports.deleteComment = async function (req,res,next){
+    try {
+        
+    } catch (error) {
+        return next(error)
+    }
+}
+
+exports.getComments = async function(req,res,next){
+    try {
+            const orderNr  = req.params.id
+            const foundOrder = await db.Order.findOne({orderNr:orderNr}).populate("comments")
+            
+
+            const comments = foundOrder.comments
+            console.log('order show comments for..', comments)
+
+            return res.status(200).json(comments)
+        
+    } catch (error) {
+        return next(error)
+    }
+}
+
+exports.getComment = async function(req,res,next){
+    try {
+        
+    } catch (error) {
+        return next(error)
+    }
+}
 module.exports = exports;
+
