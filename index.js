@@ -6,10 +6,12 @@ const cors = require('cors')
 const errorHandler = require('./helpers/error')
 const getOrderRoutes = require('./routes/orders')
 const getClientRoutes = require('./routes/clients')
+const io = require('socket.io')()
+const http = require('http')
 
 const app = express();
 
-PORT = 8081
+port = 8081
 
 app.use(bodyParser.json())
 app.use(cors())
@@ -29,4 +31,9 @@ app.use(function(req,res,next){
 
 app.use(errorHandler)
 
-app.listen(PORT,function(){console.log(`Server started at port ${PORT}`)})
+
+
+// our server instance
+const server = http.createServer(app)
+server.listen(port, () => console.log(`Listening on port ${port}`))
+// app.listen(PORT,function(){console.log(`Server started at port ${PORT}`)})

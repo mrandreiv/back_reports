@@ -135,8 +135,9 @@ exports.updateOrder = async function (req, res, next) {
                                     
         let foundOrder = await db.Order.findOne({orderNr: orderNr})
                                                      .populate('changeLog')
+                                                     .populate('comments')
 
-        console.log('+++++++UPDATED++++++:', foundOrder)
+        console.log('+++++++UPDATED++++++:', req.body)
         return res.status(200).json(foundOrder)
 
     } catch (error) {
@@ -300,7 +301,7 @@ exports.addComment = async function(req,res,next){
         .populate("comments")
         .sort({date:-1})
 
-        return res.status(200).json(allComments)
+        return res.status(200).json(allComments.comments)
         
     } catch (error) {
         return next(error)
