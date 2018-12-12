@@ -6,11 +6,14 @@ const cors = require('cors')
 const errorHandler = require('./helpers/error')
 const getOrderRoutes = require('./routes/orders')
 const getClientRoutes = require('./routes/clients')
-const io = require('socket.io')()
+const socketIO = require('socket.io')
 const http = require('http')
 
 const app = express();
 
+// our server instance
+const server = http.createServer(app)
+const io = socketIO(server)
 port = 8081
 
 app.use(bodyParser.json())
@@ -31,9 +34,15 @@ app.use(function(req,res,next){
 
 app.use(errorHandler)
 
+io.on('connection', (client) => {
+    console.log('New client connected')
+    client.on('statusChange', (status) => {
+        console.log('client has changed status to', status);
+        io.client.emit('status',status)
+    });
+
+})
 
 
-// our server instance
-const server = http.createServer(app)
 server.listen(port, () => console.log(`Listening on port ${port}`))
 // app.listen(PORT,function(){console.log(`Server started at port ${PORT}`)})
