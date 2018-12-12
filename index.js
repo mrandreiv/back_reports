@@ -36,11 +36,19 @@ app.use(errorHandler)
 
 io.on('connection', (client) => {
     console.log('New client connected')
-    client.on('statusChange', (status) => {
-        console.log('client has changed status to', status);
-        io.client.emit('status',status)
-    });
-
+  
+    client.on('orderBusy', data => {
+        console.log('message from CLIENT. busy order',data)
+        io.emit('orderBusy',data)
+    })
+    client.on('orderClosed', data => {
+        console.log('message from CLIENT. ORDER CLOSED:', data)
+        io.emit('orderClosed', data)
+    })
+    client.on('orderUpated', data => {
+        console.log('message from CLIENT. ORDER StatusUpdate:', data)
+        io.emit('orderUpated', data)
+    })
 })
 
 

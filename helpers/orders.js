@@ -1,5 +1,6 @@
 const db =require('../models')
 const faker = require('faker')
+const io = require('socket.io')();
 
 //GET
 
@@ -41,11 +42,13 @@ exports.getOrderIdSearch = async function (req, res, next){
 exports.getOrderId = async function (req, res, next) {
     try {
         let id = req.params.id
-       let foundOrder= await db.Order.findOne({orderNr: id})
+        //update order key "processing.isOpen = true"                              
+        // foundOrder.processing.isOpen=true
+
+        let foundOrder= await db.Order.findOneAndUpdate({orderNr: id},{"processing.isOpen":true}, {new: true})
                                      .populate('changeLog')
                                      .populate("comments")
-                                      
-
+       
         console.log("====ORDER FOUND: ...=====",foundOrder._id)                               
         return res.status(200).json(foundOrder)
     } catch (error) {
@@ -129,6 +132,7 @@ try {
 
 exports.updateOrder = async function (req, res, next) {
     try {
+        
         let orderNr = req.params.id
         // console.log(orderId,req.body)
          await db.Order.findOneAndUpdate({orderNr:orderNr},req.body, {new: true})
@@ -138,6 +142,8 @@ exports.updateOrder = async function (req, res, next) {
                                                      .populate('comments')
 
         console.log('+++++++UPDATED++++++:', req.body)
+        
+        // io.emit('serverOrderUpdate', foundOrder)
         return res.status(200).json(foundOrder)
 
     } catch (error) {
