@@ -11,10 +11,16 @@ const http = require('http')
 
 const app = express();
 
+
 // our server instance
 const server = http.createServer(app)
 const io = socketIO(server)
 port = 8081
+///atach the instance to the req object
+app.use(function (req, res, next) {
+    req.io = io;
+    next();
+})
 
 app.use(bodyParser.json())
 app.use(cors())
@@ -37,10 +43,10 @@ app.use(errorHandler)
 io.on('connection', (client) => {
     console.log('New client connected')
   
-    client.on('orderBusy', data => {
-        console.log('message from CLIENT. busy order',data)
-        io.emit('orderBusy',data)
-    })
+    // client.on('orderBusy', data => {
+    //     console.log('message from CLIENT. busy order',data)
+    //     io.emit('orderBusy',data)
+    // })
     client.on('orderClosed', data => {
         console.log('message from CLIENT. ORDER CLOSED:', data)
         io.emit('orderClosed', data)

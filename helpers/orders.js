@@ -1,6 +1,6 @@
 const db =require('../models')
 const faker = require('faker')
-const io = require('socket.io')();
+
 
 //GET
 
@@ -48,7 +48,10 @@ exports.getOrderId = async function (req, res, next) {
         let foundOrder= await db.Order.findOneAndUpdate({orderNr: id},{"processing.isOpen":true}, {new: true})
                                      .populate('changeLog')
                                      .populate("comments")
-       
+    //    SOCKET EMIT 
+        req.io.emit('orderBusy',foundOrder.orderNr)
+        // req.io.emit('orderUpdated',foundOrder)
+
         console.log("====ORDER FOUND: ...=====",foundOrder._id)                               
         return res.status(200).json(foundOrder)
     } catch (error) {
@@ -141,9 +144,9 @@ exports.updateOrder = async function (req, res, next) {
                                                      .populate('changeLog')
                                                      .populate('comments')
 
-        console.log('+++++++UPDATED++++++:', req.body)
+        // console.log('+++++++UPDATED++++++:', req.body)
         
-        // io.emit('serverOrderUpdate', foundOrder)
+        req.io.emit('orderUpdated', foundOrder)
         return res.status(200).json(foundOrder)
 
     } catch (error) {
