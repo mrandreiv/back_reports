@@ -1,3 +1,4 @@
 node_modules/after/.npmignore
 # dependencies
 /node_modules
+.env
