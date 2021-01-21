@@ -19,6 +19,6 @@
     "faker": "^4.1.0",
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.13",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.4.0"
   }
 }
